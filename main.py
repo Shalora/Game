@@ -139,7 +139,17 @@ class Dialog(QtWidgets.QMainWindow):
         self.warningWin = warningWindow()
 
     def closeEvent(self, event):
-       print("close")
+        bundle_dir = os.path.dirname(os.path.abspath(__file__))
+        getpath = os.path.join(bundle_dir, 'user.db')
+
+        bundle_dir = os.path.dirname(os.path.abspath(__file__))
+        getpath2 = os.path.join(bundle_dir, 'my_backup.db')
+
+        memory_db = sqlite3.connect(getpath)
+        backup_db = sqlite3.connect(getpath2)
+        memory_db.backup(backup_db)
+        memory_db.close()
+        backup_db.close()
 
 
     def showNotify(self, event):
