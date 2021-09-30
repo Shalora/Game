@@ -50,6 +50,37 @@ def test(self):
 
     self.frameSite.setLayout(self.framelayout)
 
+def forschung(self):
+    cursor = connectSql.cursor()
+    exucute = 'SELECT * FROM forschung'
+    cursor.execute(exucute)
+    zeilen = cursor.fetchall()
+    self.label = [0] * 30
+    self.label2 = [0] * 30
+    self.label3 = [0] * 30
+    self.label4 = [0] * 30
+    self.buttonFor = [0] * 30
+
+    i = 0
+    for zeile in zeilen:
+        self.label[i] = QLabel(f'{zeile[1]}')
+        self.label[i].setAlignment(Qt.AlignTop)
+        self.framelayout.addWidget(self.label[i], i, 0)
+
+        self.label2[i] = QLabel(f'{zeile[2]} * {zeile[3]}')
+        self.label2[i].setAlignment(Qt.AlignTop)
+        self.framelayout.addWidget(self.label2[i], i, 1)
+
+        kostennext = zeile[4] * (zeile[5] + 1)
+        self.label3[i] = QLabel(f'{kostennext} Papier')
+        self.label3[i].setAlignment(Qt.AlignTop)
+        self.framelayout.addWidget(self.label3[i], i, 2)
+
+        self.buttonFor[i] = QPushButton("Forschen")
+        self.buttonFor[i].setStyleSheet("max-width: 60px")
+        self.buttonFor[i].clicked.connect(
+            lambda checked, text=zeile[0]: forsch(self, text))
+        self.framelayout.addWidget(self.buttonFor[i], i, 3)
 
 def gebaeude(self):
     cursor = connectSql.cursor()
@@ -57,18 +88,25 @@ def gebaeude(self):
     cursor.execute(exucute)
 
     zeilen = cursor.fetchall()
-    self.label = [0] * 10
-    self.label2 = [0] * 10
-    self.label3 = [0] * 10
-    self.buttonBau = [0] * 10
-    self.buttonPlus = [0] * 10
-    self.buttonMinus = [0] * 10
+    self.label = [0] * 30
+    self.label2 = [0] * 30
+    self.label3 = [0] * 30
+    self.label4 = [0] * 30
+    self.label5 = [0] * 30
+    self.buttonBau = [0] * 30
+    self.buttonPlus = [0] * 30
+    self.buttonMinus = [0] * 30
     i = 0
 
     for zeile in zeilen:
-        self.label[i] = QLabel(f'{zeile[1]} Holz: {zeile[2]}')
+        maxAr = zeile[3]
+        self.label[i] = QLabel(f'{zeile[1]}')
         self.label[i].setAlignment(Qt.AlignTop)
         self.framelayout.addWidget(self.label[i], i, 0)
+
+        self.label4[i] = QLabel(f'Holz: {zeile[2]} Stein: {zeile[6]}')
+        self.label4[i].setAlignment(Qt.AlignTop)
+        self.framelayout.addWidget(self.label4[i], i, 1)
 
         exucute = f'SELECT * FROM bauten where userid = {self.userid} and gebid = {zeile[0]}'
         cursor.execute(exucute)
@@ -77,57 +115,57 @@ def gebaeude(self):
         if zeilen:
             anzahl = zeilen[0][3]
             self.label2[i] = QLabel(f'Anzahl: {anzahl}')
-            self.framelayout.addWidget(self.label2[i], i, 1)
+            self.framelayout.addWidget(self.label2[i], i, 2)
             
             if zeile[3]:
                 arbeiter = zeilen[0][4]
-                self.label3[i] = QLabel(f'Arbeiter: {arbeiter}')
-                self.framelayout.addWidget(self.label3[i], i, 2)
+                maxshow = maxAr * anzahl
+                self.label3[i] = QLabel(f'Arbeiter: {arbeiter} / {maxshow}')
+                self.framelayout.addWidget(self.label3[i], i, 3)
                 
                 self.buttonPlus[i] = QPushButton("+")
                 self.buttonPlus[i].setStyleSheet("max-width: 10px")
                 self.buttonPlus[i].clicked.connect(
                     lambda checked, text=zeile[0]: addWorker(self, text))
-                self.framelayout.addWidget(self.buttonPlus[i], i, 4)
+                self.framelayout.addWidget(self.buttonPlus[i], i, 5)
                 
                 self.buttonMinus[i] = QPushButton("-")
                 self.buttonMinus[i].setStyleSheet("max-width: 10px")
                 self.buttonMinus[i].clicked.connect(
                     lambda checked, text=zeile[0]: delWorker(self, text))
-                self.framelayout.addWidget(self.buttonMinus[i], i, 3)
+                self.framelayout.addWidget(self.buttonMinus[i], i, 4)
                 
         else:
             self.label2[i] = QLabel(f'Anzahl: 0')
-            self.framelayout.addWidget(self.label2[i], i, 1)
+            self.framelayout.addWidget(self.label2[i], i, 2)
             
             if zeile[3]:
                 self.label3[i] = QLabel(f'Arbeiter: 0')
-                self.framelayout.addWidget(self.label3[i], i, 2)
+                self.framelayout.addWidget(self.label3[i], i, 3)
                 
                 self.buttonPlus[i] = QPushButton("+")
                 self.buttonPlus[i].setStyleSheet("max-width: 10px")
                 self.buttonPlus[i].clicked.connect(
                     lambda checked, text=zeile[0]: addWorker(self, text))
-                self.framelayout.addWidget(self.buttonPlus[i], i, 4)
+                self.framelayout.addWidget(self.buttonPlus[i], i, 5)
                 
                 self.buttonMinus[i] = QPushButton("-")
                 self.buttonMinus[i].setStyleSheet("max-width: 10px")
                 self.buttonMinus[i].clicked.connect(
                     lambda checked, text=zeile[0]: delWorker(self, text))
-                self.framelayout.addWidget(self.buttonMinus[i], i, 3)
+                self.framelayout.addWidget(self.buttonMinus[i], i, 4)
 
         self.buttonBau[i] = QPushButton("Bauen")
         self.buttonBau[i].setStyleSheet("max-width: 40px")
 
         self.buttonBau[i].clicked.connect(
             lambda checked, text=zeile[0]: gebbau(self, text))
-        self.framelayout.addWidget(self.buttonBau[i], i, 5)
+        self.framelayout.addWidget(self.buttonBau[i], i, 6)
         i += 1
 
     self.frameSite.setStyleSheet("background-color: rgb(20, 20, 20)")
 
     self.frameSite.setLayout(self.framelayout)
-
 
 def addWorker(self, gebId):
     
@@ -190,8 +228,7 @@ def addWorker(self, gebId):
             
     else:
         fu.saveNotify(self, "Keine Arbeiter vorhanden")
-          
-    
+
 def delWorker(self, gebId):
     cursor = connectSql.cursor()
     exucute = f'SELECT * FROM bauten where gebid = "{gebId}" and userid = "{self.userid}"'
@@ -222,8 +259,11 @@ def gebbau(self, gebId):
     cursor.execute(exucute)
     zeilen = cursor.fetchall()
     holzKost = zeilen[0][2]
+    steinKost = zeilen[0][6]
 
-    if holzKost <= self.holz:
+    rohstoffe = fu.getRohstoffe(self)
+
+    if holzKost <= rohstoffe["holz"] and steinKost <= rohstoffe["stein"]:
 
         exucute = f'SELECT * FROM bauten where gebid = "{gebId}" and userid = "{self.userid}"'
         cursor.execute(exucute)
@@ -233,16 +273,18 @@ def gebbau(self, gebId):
             exucute = f'update bauten set anzahl = "{anzahl}" where gebid = "{gebId}" and userid = "{self.userid}"'
             cursor.execute(exucute)
 
-            holz = self.holz - holzKost
-            exucute = f'update user set holz = "{holz}" where id = "{self.userid}"'
+            rohstoffe["holz"] = rohstoffe["holz"] - holzKost
+            rohstoffe["stein"] = rohstoffe["stein"] - steinKost
+            exucute = f'update user set holz = "{rohstoffe["holz"]}", stein = {rohstoffe["stein"]} where id = "{self.userid}"'
             cursor.execute(exucute)
             connectSql.commit()
         else:
             exucute = f'insert into bauten ("userid", "gebid", anzahl, arbeiter) VALUES ("{self.userid}", "{gebId}", 1, 0)'
             cursor.execute(exucute)
 
-            holz = self.holz - holzKost
-            exucute = f'update user set holz = "{holz}" where id = "{self.userid}"'
+            rohstoffe["holz"] = rohstoffe["holz"] - holzKost
+            rohstoffe["stein"] = rohstoffe["stein"] - steinKost
+            exucute = f'update user set holz = "{rohstoffe["holz"]}", stein = {rohstoffe["stein"]} where id = "{self.userid}"'
             cursor.execute(exucute)
             connectSql.commit()
 
@@ -251,5 +293,34 @@ def gebbau(self, gebId):
                 fu.changeStimmungAll(self, 3)
             if gebId == 7:
                 fu.changeStimmungAll(self, 5)
-
+    else:
+        fu.saveNotify(self, "Nicht genügend Rohstoffe vorhanden")
     gebaeude(self)
+
+def forsch(self, forid):
+    cursor = connectSql.cursor()
+    exucute = f'SELECT * FROM forschung WHERE forid = "{forid}"'
+
+    cursor.execute(exucute)
+    zeile = cursor.fetchone()
+    rohstoffe = fu.getRohstoffe(self)
+    kostenpa = (zeile[5] + 1) * zeile[4]
+    level = zeile[5]
+
+
+    if (rohstoffe["papier"] >= kostenpa):
+        level = level + 1
+
+        exucute = f'UPDATE forschung SET level = {level} where forid = {forid}'
+
+        cursor.execute(exucute)
+        connectSql.commit()
+
+        rohstoffe["papier"] -= kostenpa
+        exucute = f'UPDATE user SET papier = {rohstoffe["papier"]} where id = {self.userid}'
+        cursor.execute(exucute)
+        connectSql.commit()
+
+        forschung(self)
+    else:
+        fu.saveNotify(self, "Nicht genügend Papier vorhanden")

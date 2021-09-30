@@ -8,7 +8,21 @@ bundle_dir = os.path.dirname(os.path.abspath(__file__))
 getpath = os.path.join(bundle_dir, 'user.db')
 connectSql = sqlite3.connect(getpath)
 cursor = connectSql.cursor()
-    
+
+def getRohstoffe(self):
+    cursor = connectSql.cursor()
+    exucute = f'SELECT * FROM user WHERE id = "{self.userid}"'
+    cursor.execute(exucute)
+    zeilen = cursor.fetchone()
+    rohstoffe = {
+        "nahrung": zeilen[2],
+        "holz": zeilen[3],
+        "wasser": zeilen[4],
+        "stein": zeilen[6],
+        "papier": zeilen[7]
+    }
+    return rohstoffe
+
 
 def saveNotify(self, notify):
     self.labelNews.setText(notify)
@@ -48,4 +62,35 @@ def changeStimmungAll(self, change):
         ex = f'Update einwohner set zufriedenheit = {stimmung} where einwohnerid = {zeile[0]}'
         cursor.execute(ex)
         connectSql.commit()
+
+def calcKette(self, verbrauch, verbrauchWert, erzeugt, erzeugtWert, gebid):
+    rohstoffe = getRohstoffe(self)
+    cursor = connectSql.cursor()
+    exucute = f'SELECT * FROM bauten WHERE gebid = "{gebid}"'
+    cursor.execute(exucute)
+    bauten = cursor.fetchone()
+
+    if bauten:
+        if bauten[3]:
+            if verbrauchWert <= rohstoffe[verbrauch]:
+                arbeiter = bauten[4]
+
+                rohstoffe[verbrauch] = rohstoffe[verbrauch] - (verbrauchWert / 5 / 60 * arbeiter)
+                rohstoffe[erzeugt] = rohstoffe[erzeugt] + (erzeugtWert / 5 / 60 * arbeiter)
+
+                ex = f'Update user set {verbrauch} = {rohstoffe[verbrauch]}, {erzeugt} = {rohstoffe[erzeugt]}' \
+                     f' where id = {self.userid}'
+                cursor.execute(ex)
+                connectSql.commit()
+
+def getForschung(self, forid):
+    cursor = connectSql.cursor()
+    exucute = f'SELECT * FROM forschung WHERE forid = "{forid}"'
+    cursor.execute(exucute)
+    zeilen = cursor.fetchone()
+    return zeilen
+
+
+
+
 
