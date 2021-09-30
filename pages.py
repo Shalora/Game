@@ -1,6 +1,5 @@
-from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import QLabel
-from PyQt5.QtWidgets import QGridLayout, QTextEdit, QPushButton
+from PyQt5.QtWidgets import QPushButton
 from PyQt5.QtCore import Qt
 import os
 import functions as fu
@@ -17,9 +16,10 @@ user = "Shalora"
 def test(self):
     self.frameSite.setStyleSheet("background-color: rgb(20, 20, 20)")
 
-    self.label = [0] * 10
-    self.label2 = [0] * 10
-    self.label3 = [0] * 10
+    self.label = [0] * 50000
+    self.label2 = [0] * 50000
+    self.label3 = [0] * 50000
+    self.label4 = [0] * 50000
     i = 0
     j = 0
     
@@ -33,18 +33,27 @@ def test(self):
         self.label[i] = QLabel(f'{j}')
         self.label[i].setAlignment(Qt.AlignTop)
         self.framelayout.addWidget(self.label[i], i, 0)
+
+        self.label4[i] = QLabel(f'{zeile[6]}')
+        self.label4[i].setAlignment(Qt.AlignTop)
+        self.framelayout.addWidget(self.label4[i], i, 1)
         
         self.label2[i] = QLabel(f'Alter: {round(zeile[2], 1)}')
         self.label2[i].setAlignment(Qt.AlignTop)
-        self.framelayout.addWidget(self.label2[i], i, 1)
+        self.framelayout.addWidget(self.label2[i], i, 2)
+
+        self.label3[i] = QLabel(f'Zufriedenheit: {round(zeile[5], 1)}')
+        self.label3[i].setAlignment(Qt.AlignTop)
+        self.framelayout.addWidget(self.label3[i], i, 3)
         
         i += 1
 
     self.frameSite.setLayout(self.framelayout)
-    
+
+
 def gebaeude(self):
     cursor = connectSql.cursor()
-    exucute = 'SELECT * FROM gebaeude'
+    exucute = 'SELECT * FROM gebaeude where unlock = true '
     cursor.execute(exucute)
 
     zeilen = cursor.fetchall()
@@ -70,7 +79,7 @@ def gebaeude(self):
             self.label2[i] = QLabel(f'Anzahl: {anzahl}')
             self.framelayout.addWidget(self.label2[i], i, 1)
             
-            if zeilen[0][2] != 3:
+            if zeile[3]:
                 arbeiter = zeilen[0][4]
                 self.label3[i] = QLabel(f'Arbeiter: {arbeiter}')
                 self.framelayout.addWidget(self.label3[i], i, 2)
@@ -91,7 +100,7 @@ def gebaeude(self):
             self.label2[i] = QLabel(f'Anzahl: 0')
             self.framelayout.addWidget(self.label2[i], i, 1)
             
-            if i != 2:
+            if zeile[3]:
                 self.label3[i] = QLabel(f'Arbeiter: 0')
                 self.framelayout.addWidget(self.label3[i], i, 2)
                 
@@ -107,8 +116,6 @@ def gebaeude(self):
                     lambda checked, text=zeile[0]: delWorker(self, text))
                 self.framelayout.addWidget(self.buttonMinus[i], i, 3)
 
-        
-        
         self.buttonBau[i] = QPushButton("Bauen")
         self.buttonBau[i].setStyleSheet("max-width: 40px")
 
@@ -120,6 +127,7 @@ def gebaeude(self):
     self.frameSite.setStyleSheet("background-color: rgb(20, 20, 20)")
 
     self.frameSite.setLayout(self.framelayout)
+
 
 def addWorker(self, gebId):
     
@@ -237,5 +245,11 @@ def gebbau(self, gebId):
             exucute = f'update user set holz = "{holz}" where id = "{self.userid}"'
             cursor.execute(exucute)
             connectSql.commit()
+
+        if gebId == 6 or gebId == 7:
+            if gebId == 6:
+                fu.changeStimmungAll(self, 3)
+            if gebId == 7:
+                fu.changeStimmungAll(self, 5)
 
     gebaeude(self)

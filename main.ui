@@ -23,7 +23,7 @@ color: rgb(255, 255, 255);</string>
      <rect>
       <x>150</x>
       <y>50</y>
-      <width>1451</width>
+      <width>1271</width>
       <height>781</height>
      </rect>
     </property>
@@ -63,29 +63,13 @@ color: rgb(255, 255, 255);</string>
      <string>Gebäude</string>
     </property>
    </widget>
-   <widget class="QLabel" name="labelNahrung">
-    <property name="geometry">
-     <rect>
-      <x>150</x>
-      <y>0</y>
-      <width>1451</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
-   </widget>
    <widget class="QLabel" name="labelNews">
     <property name="geometry">
      <rect>
       <x>140</x>
-      <y>20</y>
+      <y>-1</y>
       <width>1411</width>
-      <height>20</height>
+      <height>41</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -109,6 +93,22 @@ color: rgb(255, 255, 255);</string>
     </property>
     <property name="text">
      <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelNahrung">
+    <property name="geometry">
+     <rect>
+      <x>1440</x>
+      <y>50</y>
+      <width>171</width>
+      <height>781</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignHCenter|Qt::AlignTop</set>
     </property>
    </widget>
   </widget>
