@@ -1,3 +1,10 @@
+from PyQt5 import QtWidgets, uic
+from PyQt5.QtWidgets import QPushButton
+from PyQt5.QtWidgets import QGridLayout, QTextEdit, QPushButton
+from PyQt5.QtWidgets import QLabel
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
+from PyQt5.QtGui import QIcon, QPixmap
 import sqlite3
 import time
 import os
@@ -90,6 +97,33 @@ def getForschung(self, forid):
     zeilen = cursor.fetchone()
     return zeilen
 
+
+def getBauten(self, gebId):
+    cursor = connectSql.cursor()
+    exucute = f'SELECT * FROM bauten where gebid = "{gebId}" and userid = "{self.userid}"'
+    cursor.execute(exucute)
+    zeilen = cursor.fetchall()
+    return zeilen
+
+def refreshNotify(self):
+    self.notify1 = [0] * 30
+    self.notify2 = [0] * 30
+    i = 0
+
+    # self.grid = QGridLayout(self.notify)
+    self.grid = self.notify.gridLayout
+    self.grid.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
+
+    cursor = connectSql.cursor()
+    exucute = f'SELECT * FROM notifys ORDER BY id DESC LIMIT 20'
+    cursor.execute(exucute)
+    zeilen = cursor.fetchall()
+    for zeile in zeilen:
+        self.notify1[i] = QLabel(f'{zeile[2]} : {zeile[1]}')
+        self.notify1[i].setAlignment(Qt.AlignTop)
+        self.grid.addWidget(self.notify1[i], i, 0)
+
+        i += 1
 
 
 

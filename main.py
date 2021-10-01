@@ -12,13 +12,13 @@ import sqlite3
 import random
 import functions as fu
 import names
+from datetime import datetime
 
 bundle_dir = os.path.dirname(os.path.abspath(__file__))
 getpath = os.path.join(bundle_dir, 'user.db')
 
 connectSql = sqlite3.connect(getpath)
 
-# Now use `memory_db` without modifying disk db
 
 
 user = "Shalora"
@@ -63,7 +63,7 @@ class warningWindow(QtWidgets.QMainWindow):
     def __init__(self):
         QtWidgets.QMainWindow.__init__(self)
         bundle_dir = os.path.dirname(os.path.abspath(__file__))
-        getpath = os.path.join(bundle_dir, 'warning.ui')
+        getpath = os.path.join(bundle_dir, 'interfaces/warning.ui')
         self.warning = uic.loadUi(getpath, self)
 
 
@@ -71,33 +71,11 @@ class NotifyWindow(QtWidgets.QMainWindow):
     def __init__(self):
         QtWidgets.QMainWindow.__init__(self)
         bundle_dir = os.path.dirname(os.path.abspath(__file__))
-        getpath = os.path.join(bundle_dir, 'notify.ui')
+        getpath = os.path.join(bundle_dir, 'interfaces/notify.ui')
         self.notify = uic.loadUi(getpath, self)
 
-        self.timerDay = QTimer()
-        self.timerDay.setInterval(1000)
-        self.timerDay.timeout.connect(self.refreshNotify)
-        self.timerDay.start()
 
-    def refreshNotify(self):
-        self.notify1 = [0] * 30
-        self.notify2 = [0] * 30
-        i = 0
 
-        # self.grid = QGridLayout(self.notify)
-        self.grid = self.notify.gridLayout
-        self.grid.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
-
-        cursor = connectSql.cursor()
-        exucute = f'SELECT * FROM notifys ORDER BY id DESC LIMIT 20'
-        cursor.execute(exucute)
-        zeilen = cursor.fetchall()
-        for zeile in zeilen:
-            self.notify1[i] = QLabel(f'{zeile[2]} : {zeile[1]}')
-            self.notify1[i].setAlignment(Qt.AlignTop)
-            self.grid.addWidget(self.notify1[i], i, 0)
-
-            i += 1
 
 
 class Dialog(QtWidgets.QMainWindow):
@@ -112,7 +90,7 @@ class Dialog(QtWidgets.QMainWindow):
         self.userid = zeilen[0][0]
 
         bundle_dir = os.path.dirname(os.path.abspath(__file__))
-        getpath = os.path.join(bundle_dir, 'main.ui')
+        getpath = os.path.join(bundle_dir, 'interfaces/main.ui')
 
         self = uic.loadUi(getpath, self)
 
@@ -120,7 +98,7 @@ class Dialog(QtWidgets.QMainWindow):
         self.framelayout.setAlignment(Qt.AlignTop)
         self.testLabel.mousePressEvent = self.open_test
         self.testLabel_2.mousePressEvent = self.open_page2
-
+        self.testLabel_3.mousePressEvent = self.open_statistik
         self.testLabel_4.mousePressEvent = self.open_forschung
 
         self.labelNews.mousePressEvent = self.showNotify
@@ -142,8 +120,11 @@ class Dialog(QtWidgets.QMainWindow):
         bundle_dir = os.path.dirname(os.path.abspath(__file__))
         getpath = os.path.join(bundle_dir, 'user.db')
 
+        now = datetime.now()
+        current_time = now.strftime("%d%m%y")
+
         bundle_dir = os.path.dirname(os.path.abspath(__file__))
-        getpath2 = os.path.join(bundle_dir, 'my_backup.db')
+        getpath2 = os.path.join(bundle_dir, f'dbbackup/my_backup{current_time}.db')
 
         memory_db = sqlite3.connect(getpath)
         backup_db = sqlite3.connect(getpath2)
@@ -152,8 +133,11 @@ class Dialog(QtWidgets.QMainWindow):
         backup_db.close()
 
 
+
+
     def showNotify(self, event):
         self.notifyWindow.show()
+        fu.refreshNotify(self.notifyWindow)
 
     def calculateThings(self):
         gesZufriedenheit = 0
@@ -161,27 +145,27 @@ class Dialog(QtWidgets.QMainWindow):
         rohstoffe = fu.getRohstoffe(self)
 
         HolzArb = 0
-        zeilen = self.getBauten(1)
+        zeilen = fu.getBauten(self, 1)
         if zeilen:
             HolzArb = zeilen[0][4]
 
         bauern = 0
-        zeilen = self.getBauten(2)
+        zeilen = fu.getBauten(self, 2)
         if zeilen:
             bauern = zeilen[0][4]
 
         fischer = 0
-        zeilen = self.getBauten(5)
+        zeilen = fu.getBauten(self, 5)
         if zeilen:
             fischer = zeilen[0][4]
 
         wassertraeger = 0
-        zeilen = self.getBauten(4)
+        zeilen = fu.getBauten(self, 4)
         if zeilen:
             wassertraeger = zeilen[0][4]
 
         steinmetz = 0
-        zeilen = self.getBauten(8)
+        zeilen = fu.getBauten(self, 8)
         if zeilen:
             steinmetz = zeilen[0][4]
 
@@ -268,7 +252,7 @@ class Dialog(QtWidgets.QMainWindow):
             connectSql.commit()
 
             bundle_dir = os.path.dirname(os.path.abspath(__file__))
-            getpath = os.path.join(bundle_dir, 'warn.png')
+            getpath = os.path.join(bundle_dir, 'pictures/warn.png')
             pixmap = QPixmap(getpath)
             self.warnLabel.setPixmap(pixmap)
 
@@ -291,13 +275,6 @@ class Dialog(QtWidgets.QMainWindow):
         self.einwohnerBeduerfnis()
 
         fu.calcKette(self, "holz", 2, "papier", 1, 9)
-
-    def getBauten(self, gebId):
-        cursor = connectSql.cursor()
-        exucute = f'SELECT * FROM bauten where gebid = "{gebId}" and userid = "{self.userid}"'
-        cursor.execute(exucute)
-        zeilen = cursor.fetchall()
-        return zeilen
 
     def calcGeneral(self):
         cursor = connectSql.cursor()
@@ -394,6 +371,14 @@ class Dialog(QtWidgets.QMainWindow):
 
     def bedarfAcceptChoose(self, bid):
         cursor = connectSql.cursor()
+
+        ex = f'SELECT einid FROM bedarfDo WHERE bid = "{bid}" and userid = "{self.userid}" and accept = 0'
+        print(ex)
+        cursor.execute(ex)
+        zeilen = cursor.fetchall()
+        einid = zeilen[0][0]
+
+
         ex = f'SELECT * FROM bedarfsMeldungen where bid = {bid}'
 
         cursor.execute(ex)
@@ -408,10 +393,7 @@ class Dialog(QtWidgets.QMainWindow):
         zeilen = cursor.fetchall()
         rohstoffakt = zeilen[0][0]
 
-        ex = f'SELECT einid FROM bedarfDo WHERE bid = "{bid}" and userid = "{self.userid}" and accept = 0'
-        cursor.execute(ex)
-        zeilen = cursor.fetchall()
-        einid = zeilen[0][0]
+
 
         ex = f'SELECT zufriedenheit FROM einwohner where einwohnerid = {einid} '
         cursor.execute(ex)
@@ -625,6 +607,10 @@ class Dialog(QtWidgets.QMainWindow):
     def open_forschung(self, event):
         self.clearLayout(self.framelayout)
         im.forschung(self)
+
+    def open_statistik(self, event):
+        self.clearLayout(self.framelayout)
+        im.statistiken(self)
 
     def printRess(self):
         vorhandenArbeiter = 0

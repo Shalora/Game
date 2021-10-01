@@ -51,6 +51,7 @@ def test(self):
     self.frameSite.setLayout(self.framelayout)
 
 def forschung(self):
+    self.frameSite.setStyleSheet("background-color: rgb(20, 20, 20)")
     cursor = connectSql.cursor()
     exucute = 'SELECT * FROM forschung'
     cursor.execute(exucute)
@@ -166,6 +167,181 @@ def gebaeude(self):
     self.frameSite.setStyleSheet("background-color: rgb(20, 20, 20)")
 
     self.frameSite.setLayout(self.framelayout)
+
+def statistiken(self):
+    label1 = [0] * 30
+    label2 = [0] * 30
+    label3 = [0] * 30
+    label4 = [0] * 30
+
+    self.frameSite.setStyleSheet("background-color: rgb(20, 20, 20)")
+    gesZufriedenheit = 0
+    cursor = connectSql.cursor()
+
+    rohstoffe = fu.getRohstoffe(self)
+
+    HolzArb = 0
+    zeilen = fu.getBauten(self, 1)
+    if zeilen:
+        HolzArb = zeilen[0][4]
+
+    bauern = 0
+    zeilen = fu.getBauten(self, 2)
+    if zeilen:
+        bauern = zeilen[0][4]
+
+    fischer = 0
+    zeilen = fu.getBauten(self, 5)
+    if zeilen:
+        fischer = zeilen[0][4]
+
+    wassertraeger = 0
+    zeilen = fu.getBauten(self, 4)
+    if zeilen:
+        wassertraeger = zeilen[0][4]
+
+    steinmetz = 0
+    zeilen = fu.getBauten(self, 8)
+    if zeilen:
+        steinmetz = zeilen[0][4]
+
+    exucute = f'SELECT * FROM einwohner WHERE userid = "{self.userid}"'
+    cursor.execute(exucute)
+    zeilen = cursor.fetchall()
+    gesamtEinwohner = len(zeilen)
+
+    for zeile in zeilen:
+        gesZufriedenheit += zeile[5]
+
+    durZufriedenheit = gesZufriedenheit / gesamtEinwohner
+    fakZufriedenheit = durZufriedenheit / 100
+
+    holzpflug = fu.getForschung(self, 1)
+    nahrungForAdd = 1 + (holzpflug[3] * holzpflug[5])
+
+    exucute = f'SELECT * FROM bauten WHERE gebid = "9"'
+    cursor.execute(exucute)
+    bauten = cursor.fetchone()
+    arbeiter = bauten[4]
+
+
+    nahrungSek = (
+            ((fischer * (1 / 75)) + (bauern * (1 / 100)) - (
+                        gesamtEinwohner * (1 / 300))) * fakZufriedenheit * nahrungForAdd)
+    nahrungMin = (
+            ((fischer * (1 / 75)) + (bauern * (1 / 100)) - (
+                    gesamtEinwohner * (1 / 300))) * fakZufriedenheit * nahrungForAdd)*60
+    nahrungStd = (
+            ((fischer * (1 / 75)) + (bauern * (1 / 100)) - (
+                    gesamtEinwohner * (1 / 300))) * fakZufriedenheit * nahrungForAdd)*3600
+    holzSek = ((HolzArb * ((10 / 10) / 60)) * fakZufriedenheit - (2 / 5 / 60 * arbeiter))
+    holzMin = ((HolzArb * ((10 / 10) / 60)) * fakZufriedenheit - (2 / 5 / 60 * arbeiter)) * 60
+    holzStd = ((HolzArb * ((10 / 10) / 60)) * fakZufriedenheit - (2 / 5 / 60 * arbeiter)) * 3600
+    wasserSek = ((wassertraeger * (1 / 200)) * fakZufriedenheit)
+    wasserMin = ((wassertraeger * (1 / 200)) * fakZufriedenheit) * 60
+    wasserStd = ((wassertraeger * (1 / 200)) * fakZufriedenheit) * 3600
+    steinSek = ((steinmetz * (1 / 60)) * fakZufriedenheit)
+    steinMin = ((steinmetz * (1 / 60)) * fakZufriedenheit) * 60
+    steinStd = ((steinmetz * (1 / 60)) * fakZufriedenheit) * 3600
+    papierSek = (1 / 5 / 60 * arbeiter)
+    papierMin = (1 / 5 / 60 * arbeiter) * 60
+    papierStd = (1 / 5 / 60 * arbeiter) * 3600
+
+    label1[0] = QLabel("Rohstoff")
+    label1[0].setAlignment(Qt.AlignTop)
+    self.framelayout.addWidget(label1[0], 0, 0)
+
+    label2[0] = QLabel("Pro Sekunde")
+    label2[0].setAlignment(Qt.AlignTop)
+    self.framelayout.addWidget(label2[0], 0, 1)
+
+    label3[0] = QLabel("Pro Minute")
+    label3[0].setAlignment(Qt.AlignTop)
+    self.framelayout.addWidget(label3[0], 0, 2)
+
+    label4[0] = QLabel("Pro Stunde")
+    label4[0].setAlignment(Qt.AlignTop)
+    self.framelayout.addWidget(label4[0], 0, 3)
+
+    label1[1] = QLabel("Nahrung")
+    label1[1].setAlignment(Qt.AlignTop)
+    self.framelayout.addWidget(label1[1], 1, 0)
+
+    label2[1] = QLabel(f'{round(nahrungSek, 2)}')
+    label2[1].setAlignment(Qt.AlignTop)
+    self.framelayout.addWidget(label2[1], 1, 1)
+
+    label3[1] = QLabel(f'{round(nahrungMin, 2)}')
+    label3[1].setAlignment(Qt.AlignTop)
+    self.framelayout.addWidget(label3[1], 1, 2)
+
+    label4[1] = QLabel(f'{round(nahrungStd, 2)}')
+    label4[1].setAlignment(Qt.AlignTop)
+    self.framelayout.addWidget(label4[1], 1, 3)
+
+    label1[2] = QLabel("Holz")
+    label1[2].setAlignment(Qt.AlignTop)
+    self.framelayout.addWidget(label1[2], 2, 0)
+
+    label2[2] = QLabel(f'{round(holzSek, 2)}')
+    label2[2].setAlignment(Qt.AlignTop)
+    self.framelayout.addWidget(label2[2], 2, 1)
+
+    label3[2] = QLabel(f'{round(holzMin, 2)}')
+    label3[2].setAlignment(Qt.AlignTop)
+    self.framelayout.addWidget(label3[2], 2, 2)
+
+    label4[2] = QLabel(f'{round(holzStd, 2)}')
+    label4[2].setAlignment(Qt.AlignTop)
+    self.framelayout.addWidget(label4[2], 2, 3)
+
+    label1[3] = QLabel("Wasser")
+    label1[3].setAlignment(Qt.AlignTop)
+    self.framelayout.addWidget(label1[3], 3, 0)
+
+    label2[3] = QLabel(f'{round(wasserSek, 2)}')
+    label2[3].setAlignment(Qt.AlignTop)
+    self.framelayout.addWidget(label2[3], 3, 1)
+
+    label3[3] = QLabel(f'{round(wasserMin, 2)}')
+    label3[3].setAlignment(Qt.AlignTop)
+    self.framelayout.addWidget(label3[3], 3, 2)
+
+    label4[3] = QLabel(f'{round(wasserStd, 2)}')
+    label4[3].setAlignment(Qt.AlignTop)
+    self.framelayout.addWidget(label4[3], 3, 3)
+
+    label1[4] = QLabel("Stein")
+    label1[4].setAlignment(Qt.AlignTop)
+    self.framelayout.addWidget(label1[4], 4, 0)
+
+    label2[4] = QLabel(f'{round(steinSek, 2)}')
+    label2[4].setAlignment(Qt.AlignTop)
+    self.framelayout.addWidget(label2[4], 4, 1)
+
+    label3[4] = QLabel(f'{round(steinMin, 2)}')
+    label3[4].setAlignment(Qt.AlignTop)
+    self.framelayout.addWidget(label3[4], 4, 2)
+
+    label4[4] = QLabel(f'{round(steinStd, 2)}')
+    label4[4].setAlignment(Qt.AlignTop)
+    self.framelayout.addWidget(label4[4], 4, 3)
+
+    label1[5] = QLabel("Papier")
+    label1[5].setAlignment(Qt.AlignTop)
+    self.framelayout.addWidget(label1[5], 5, 0)
+
+    label2[5] = QLabel(f'{round(papierSek, 2)}')
+    label2[5].setAlignment(Qt.AlignTop)
+    self.framelayout.addWidget(label2[5], 5, 1)
+
+    label3[5] = QLabel(f'{round(papierMin, 2)}')
+    label3[5].setAlignment(Qt.AlignTop)
+    self.framelayout.addWidget(label3[5], 5, 2)
+
+    label4[5] = QLabel(f'{round(papierStd, 2)}')
+    label4[5].setAlignment(Qt.AlignTop)
+    self.framelayout.addWidget(label4[5], 5, 3)
 
 def addWorker(self, gebId):
     
