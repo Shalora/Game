@@ -1,9 +1,12 @@
-from PyQt5.QtWidgets import QLabel
+from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import QPushButton
-from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QGridLayout, QTextEdit, QPushButton
+from PyQt5.QtWidgets import QLabel
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
 import os
 import functions as fu
-
+import tabulate
 import sqlite3
 
 bundle_dir = os.path.dirname(os.path.abspath(__file__))
@@ -14,44 +17,94 @@ user = "Shalora"
 
 
 def test(self):
-    self.frameSite.setStyleSheet("background-color: rgb(20, 20, 20)")
+    self.widgetSite.setStyleSheet("background-color: rgb(20, 20, 20)")
 
     self.label = [0] * 50000
     self.label2 = [0] * 50000
     self.label3 = [0] * 50000
     self.label4 = [0] * 50000
+    layout = [0] * 50000
     i = 0
     j = 0
-    
+
+    scroll_area = QScrollArea()
+    self.framelayout.addWidget(scroll_area)
+    scroll_widget = QWidget()
+    scroll_layout = QFormLayout(scroll_widget)
+
+
+
     cursor = connectSql.cursor()
-    exucute = f'SELECT * FROM einwohner WHERE userid = "{self.userid}"'
+    exucute = f'SELECT * FROM einwohner WHERE userid = "{self.userid}" ORDER BY lebensalter DESC'
     cursor.execute(exucute)
     zeilen = cursor.fetchall()
-    
+
+    inhalt = ""
+
+
+
     for zeile in zeilen:
+        layout[i] = QHBoxLayout()
+        layout[i].setSpacing(200)
+
+
+
         j += 1
         self.label[i] = QLabel(f'{j}')
-        self.label[i].setAlignment(Qt.AlignTop)
-        self.framelayout.addWidget(self.label[i], i, 0)
+        #self.label[i].setAlignment(Qt.AlignTop)
+        #self.framelayout.addWidget(self.label[i], i, 0)
+        #scroll_layout.addWidget(self.label[i])
+        layout[i].addWidget(self.label[i])
 
         self.label4[i] = QLabel(f'{zeile[6]}')
-        self.label4[i].setAlignment(Qt.AlignTop)
-        self.framelayout.addWidget(self.label4[i], i, 1)
+        #self.label4[i].setAlignment(Qt.AlignTop)
+        #self.framelayout.addWidget(self.label4[i], i, 1)
+        #scroll_layout.addWidget(self.label4[i])
+        layout[i].addWidget(self.label4[i])
+
         
+        #self.label2[i] = QLabel(f'Alter: {round(zeile[2], 1)} \tZufriedenheit: {round(zeile[5], 1)} \t Gesundheit: {round(zeile[4], 1)}')
         self.label2[i] = QLabel(f'Alter: {round(zeile[2], 1)}')
-        self.label2[i].setAlignment(Qt.AlignTop)
-        self.framelayout.addWidget(self.label2[i], i, 2)
+        #self.label2[i].setAlignment(Qt.AlignTop)
+        #self.framelayout.addWidget(self.label2[i], i, 2)
+        #scroll_layout.addWidget(self.label2[i])
+        layout[i].addWidget(self.label2[i])
+
 
         self.label3[i] = QLabel(f'Zufriedenheit: {round(zeile[5], 1)}')
-        self.label3[i].setAlignment(Qt.AlignTop)
-        self.framelayout.addWidget(self.label3[i], i, 3)
-        
-        i += 1
+        #self.label3[i].setAlignment(Qt.AlignTop)
+        #self.framelayout.addWidget(self.label3[i], i, 3)
+        #scroll_layout.addWidget(self.label3[i])
+        layout[i].addWidget(self.label3[i])
 
-    self.frameSite.setLayout(self.framelayout)
+
+        #scroll_layout.addRow(self.label4[i], self.label2[i])
+        scroll_layout.addRow(layout[i])
+        i += 1
+        #output = "{:<40} {:<15} {:<10}".format(zeile[6], round(zeile[2], 1), round(zeile[5], 1))
+        #print(output)
+        #inhalt = f'{zeile[6]} \tAlter: {round(zeile[2], 1)} \tZufriedenheit: {round(zeile[5], 1)}'
+        #lenge = len(zeile[6])
+        #ergebnis = inhalt.expandtabs(90-lenge)
+
+        #scroll_layout.addRow(QLabel(ergebnis))
+        scroll_layout.setAlignment(Qt.AlignCenter)
+
+
+    scroll_area.setWidget(scroll_widget)
+    #scroll_area.setAlignment(Qt.AlignTop)
+    scroll_area.setAlignment(Qt.AlignHCenter)
+    self.widgetSite.setLayout(self.framelayout)
+
+
 
 def forschung(self):
-    self.frameSite.setStyleSheet("background-color: rgb(20, 20, 20)")
+
+
+
+
+
+    self.widgetSite.setStyleSheet("background-color: rgb(20, 20, 20)")
     cursor = connectSql.cursor()
     exucute = 'SELECT * FROM forschung'
     cursor.execute(exucute)
@@ -82,6 +135,8 @@ def forschung(self):
         self.buttonFor[i].clicked.connect(
             lambda checked, text=zeile[0]: forsch(self, text))
         self.framelayout.addWidget(self.buttonFor[i], i, 3)
+
+
 
 def gebaeude(self):
     cursor = connectSql.cursor()
@@ -164,9 +219,9 @@ def gebaeude(self):
         self.framelayout.addWidget(self.buttonBau[i], i, 6)
         i += 1
 
-    self.frameSite.setStyleSheet("background-color: rgb(20, 20, 20)")
+    self.widgetSite.setStyleSheet("background-color: rgb(20, 20, 20)")
 
-    self.frameSite.setLayout(self.framelayout)
+    self.widgetSite.setLayout(self.framelayout)
 
 def statistiken(self):
     label1 = [0] * 30
@@ -174,7 +229,7 @@ def statistiken(self):
     label3 = [0] * 30
     label4 = [0] * 30
 
-    self.frameSite.setStyleSheet("background-color: rgb(20, 20, 20)")
+    self.widgetSite.setStyleSheet("background-color: rgb(20, 20, 20)")
     gesZufriedenheit = 0
     cursor = connectSql.cursor()
 

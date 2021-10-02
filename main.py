@@ -74,14 +74,11 @@ class NotifyWindow(QtWidgets.QMainWindow):
         getpath = os.path.join(bundle_dir, 'interfaces/notify.ui')
         self.notify = uic.loadUi(getpath, self)
 
-
-
-
-
 class Dialog(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
         """Initializer."""
         super().__init__(parent)
+
 
         cursor = connectSql.cursor()
         exucute = f'SELECT * FROM user WHERE nick = "{user}"'
@@ -94,7 +91,7 @@ class Dialog(QtWidgets.QMainWindow):
 
         self = uic.loadUi(getpath, self)
 
-        self.framelayout = QGridLayout(self.frameSite)
+
         self.framelayout.setAlignment(Qt.AlignTop)
         self.testLabel.mousePressEvent = self.open_test
         self.testLabel_2.mousePressEvent = self.open_page2
@@ -103,15 +100,21 @@ class Dialog(QtWidgets.QMainWindow):
 
         self.labelNews.mousePressEvent = self.showNotify
 
+
         self.timerDay = QTimer()
         self.timerDay.setInterval(1000)
         self.timerDay.timeout.connect(self.calculateThings)
         self.timerDay.start()
 
         self.timer = QTimer()
-        self.timer.setInterval(1000)
+        self.timer.setInterval(2000)
         self.timer.timeout.connect(self.printRess)
         self.timer.start()
+
+        self.timer2 = QTimer()
+        self.timer2.setInterval(10000)
+        self.timer2.timeout.connect(self.calcOverview)
+        self.timer2.start()
 
         self.notifyWindow = NotifyWindow()
         self.warningWin = warningWindow()
@@ -131,9 +134,6 @@ class Dialog(QtWidgets.QMainWindow):
         memory_db.backup(backup_db)
         memory_db.close()
         backup_db.close()
-
-
-
 
     def showNotify(self, event):
         self.notifyWindow.show()
@@ -266,15 +266,19 @@ class Dialog(QtWidgets.QMainWindow):
         else:
             self.warnLabel.clear()
 
-        self.calcEinwohner()
         self.calcGeneral()
-        self.calcEreignis()
+
+
         fu.checkBuildings(self)
-        self.stimmungsEreignis()
-        self.einwohnerEreignis()
-        self.einwohnerBeduerfnis()
 
         fu.calcKette(self, "holz", 2, "papier", 1, 9)
+
+    def calcOverview(self):
+        self.stimmungsEreignis()
+        self.einwohnerBeduerfnis()
+        self.einwohnerEreignis()
+        self.calcEreignis()
+        self.calcEinwohner()
 
     def calcGeneral(self):
         cursor = connectSql.cursor()
@@ -291,8 +295,9 @@ class Dialog(QtWidgets.QMainWindow):
         connectSql.commit()
 
     def stimmungsEreignis(self):
-        hit = random.randint(1, 2000)
-        if hit == 2000:
+        hit = random.randint(1, 50)
+
+        if hit == 50:
             cu = connectSql.cursor()
             ex = f'SELECT * FROM einwohner where userid = {self.userid}'
             cu.execute(ex)
@@ -320,9 +325,9 @@ class Dialog(QtWidgets.QMainWindow):
                 connectSql.commit()
 
     def einwohnerBeduerfnis(self):
-        hit = random.randint(1, 2000)
+        hit = random.randint(1, 50)
 
-        if hit == 2000:
+        if hit == 50:
             cu = connectSql.cursor()
             ex = f'SELECT * FROM bedarfsMeldungen'
             cu.execute(ex)
@@ -373,7 +378,7 @@ class Dialog(QtWidgets.QMainWindow):
         cursor = connectSql.cursor()
 
         ex = f'SELECT einid FROM bedarfDo WHERE bid = "{bid}" and userid = "{self.userid}" and accept = 0'
-        print(ex)
+
         cursor.execute(ex)
         zeilen = cursor.fetchall()
         einid = zeilen[0][0]
@@ -420,8 +425,9 @@ class Dialog(QtWidgets.QMainWindow):
         self.warningWin.close()
 
     def einwohnerEreignis(self):
-        hit = random.randint(1, 2000)
-        if hit == 2000:
+        hit = random.randint(1, 50)
+
+        if hit == 50:
             cu = connectSql.cursor()
             ex = f'SELECT * FROM einwohnerereignis'
             cu.execute(ex)
@@ -488,9 +494,9 @@ class Dialog(QtWidgets.QMainWindow):
 
         if secondsGone > 3600:
             if lastEreignis >= 1800:
-                hit = random.randint(1, 1000)
+                hit = random.randint(1, 100)
 
-                if hit >= 980:
+                if hit >= 98:
                     exucute = f'SELECT * FROM rohstoffereignis'
                     cursor.execute(exucute)
                     zeilen = cursor.fetchall()
@@ -520,7 +526,7 @@ class Dialog(QtWidgets.QMainWindow):
         zeilen = cursor.fetchall()
 
         for zeile in zeilen:
-            alter = zeile[2] + (1 / (5 * 60))
+            alter = zeile[2] + (1 / (5 * 6))
             exucute = f'UPDATE einwohner SET lebensalter = "{alter}" WHERE einwohnerid = "{zeile[0]}"'
             cursor.execute(exucute)
             connectSql.commit()
@@ -548,7 +554,7 @@ class Dialog(QtWidgets.QMainWindow):
                 zeilen = cursor.fetchall()
                 secWith = zeilen[0][5]
 
-                maxHit = 2000 / zeugungsGruppen
+                maxHit = 200 / zeugungsGruppen
 
                 if secWith > round(maxHit):
                     secWith = round(maxHit)
@@ -556,7 +562,7 @@ class Dialog(QtWidgets.QMainWindow):
 
                 if hit != round(maxHit):
 
-                    secWith += 1
+                    secWith += 10
 
                     exucute = f'UPDATE user SET secondsWithout = "{secWith}" where id = "{self.userid}"'
                     cursor.execute(exucute)
@@ -578,8 +584,9 @@ class Dialog(QtWidgets.QMainWindow):
         zeilen = cursor.fetchall()
         for zeile in zeilen:
 
-            hit = random.randint(int(zeile[2]), 200)
-            if hit == 200:
+            hit = random.randint(int(zeile[2]), 100)
+
+            if hit == 100:
                 if zeile[3] > 0:
                     ex = f'SELECT arbeiter FROM bauten WHERE userid = "{self.userid}" AND id = "{zeile[3]}"'
                     cursor.execute(ex)
