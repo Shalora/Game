@@ -20,7 +20,6 @@ getpath = os.path.join(bundle_dir, 'user.db')
 connectSql = sqlite3.connect(getpath)
 
 
-
 user = "Shalora"
 userid = 0
 
@@ -74,11 +73,11 @@ class NotifyWindow(QtWidgets.QMainWindow):
         getpath = os.path.join(bundle_dir, 'interfaces/notify.ui')
         self.notify = uic.loadUi(getpath, self)
 
+
 class Dialog(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
         """Initializer."""
         super().__init__(parent)
-
 
         cursor = connectSql.cursor()
         exucute = f'SELECT * FROM user WHERE nick = "{user}"'
@@ -91,7 +90,6 @@ class Dialog(QtWidgets.QMainWindow):
 
         self = uic.loadUi(getpath, self)
 
-
         self.framelayout.setAlignment(Qt.AlignTop)
         self.testLabel.mousePressEvent = self.open_test
         self.testLabel_2.mousePressEvent = self.open_page2
@@ -99,7 +97,6 @@ class Dialog(QtWidgets.QMainWindow):
         self.testLabel_4.mousePressEvent = self.open_forschung
 
         self.labelNews.mousePressEvent = self.showNotify
-
 
         self.timerDay = QTimer()
         self.timerDay.setInterval(1000)
@@ -117,7 +114,6 @@ class Dialog(QtWidgets.QMainWindow):
         self.timer2.start()
 
         self.notifyWindow = NotifyWindow()
-        self.warningWin = warningWindow()
 
     def closeEvent(self, event):
         bundle_dir = os.path.dirname(os.path.abspath(__file__))
@@ -127,7 +123,8 @@ class Dialog(QtWidgets.QMainWindow):
         current_time = now.strftime("%d%m%y")
 
         bundle_dir = os.path.dirname(os.path.abspath(__file__))
-        getpath2 = os.path.join(bundle_dir, f'dbbackup/my_backup{current_time}.db')
+        getpath2 = os.path.join(
+            bundle_dir, f'dbbackup/my_backup{current_time}.db')
 
         memory_db = sqlite3.connect(getpath)
         backup_db = sqlite3.connect(getpath2)
@@ -169,6 +166,11 @@ class Dialog(QtWidgets.QMainWindow):
         if zeilen:
             steinmetz = zeilen[0][4]
 
+        eisenberg = 0
+        zeilen = fu.getBauten(self, 10)
+        if zeilen:
+            eisenberg = zeilen[0][4]
+
         exucute = f'SELECT * FROM einwohner WHERE userid = "{self.userid}"'
         cursor.execute(exucute)
         zeilen = cursor.fetchall()
@@ -183,15 +185,30 @@ class Dialog(QtWidgets.QMainWindow):
         holzpflug = fu.getForschung(self, 1)
         nahrungForAdd = 1 + (holzpflug[3] * holzpflug[5])
 
-
         self.nahrung = rohstoffe["nahrung"] + (
                     ((fischer * (1 / 75)) + (bauern * (1 / 100)) - (gesamtEinwohner * (1 / 300))) * fakZufriedenheit * nahrungForAdd)
-        self.holz = rohstoffe["holz"] + ((HolzArb * ((10 / 10) / 60)) * fakZufriedenheit)
-        self.wasser = rohstoffe["wasser"] + ((wassertraeger * (1 / 200)) * fakZufriedenheit)
-        self.stein = rohstoffe["stein"] + ((steinmetz * (1 / 60)) * fakZufriedenheit)
+        self.holz = rohstoffe["holz"] + \
+            ((HolzArb * ((10 / 10) / 60)) * fakZufriedenheit)
+        self.wasser = rohstoffe["wasser"] + \
+            ((wassertraeger * (1 / 200)) * fakZufriedenheit)
+        self.stein = rohstoffe["stein"] + \
+            ((steinmetz * (1 / 60)) * fakZufriedenheit)
+        self.eisen = rohstoffe["eisen"] + \
+            ((eisenberg * (1 / 70)) * fakZufriedenheit)
+
+        if self.nahrung < 0:
+            self.nahrung = 0
+        if self.holz < 0:
+            self.holz = 0
+        if self.wasser < 0:
+            self.wasser = 0
+        if self.stein < 0:
+            self.stein = 0
+        if self.eisen < 0:
+            self.eisen = 0
 
         exucute = f'UPDATE user set nahrung = "{self.nahrung}", holz = "{self.holz}", wasser = {self.wasser}, ' \
-                  f'stein = {self.stein} WHERE id = "{self.userid}" '
+                  f'stein = {self.stein}, eisen = {self.eisen} WHERE id = "{self.userid}" '
         cursor.execute(exucute)
         connectSql.commit()
 
@@ -221,7 +238,8 @@ class Dialog(QtWidgets.QMainWindow):
             if rohstoffPl:
 
                 if rohstoffEr == "nahrung":
-                    calc = ((fischer * (1 / 75)) + (bauern * (1 / 100)) - (gesamtEinwohner * (1 / 300)))
+                    calc = ((fischer * (1 / 75)) + (bauern * (1 / 100)
+                                                    ) - (gesamtEinwohner * (1 / 300)))
 
                 if rohstoffEr == "holz":
                     calc = (HolzArb * ((10 / 10) / 60))
@@ -236,7 +254,8 @@ class Dialog(QtWidgets.QMainWindow):
             if rohstoffMi:
 
                 if rohstoffEr == "nahrung":
-                    calc = ((fischer * (1 / 75)) + (bauern * (1 / 100)) - (gesamtEinwohner * (1 / 300)))
+                    calc = ((fischer * (1 / 75)) + (bauern * (1 / 100)
+                                                    ) - (gesamtEinwohner * (1 / 300)))
                 if rohstoffEr == "holz":
                     calc = (HolzArb * ((10 / 10) / 60))
                 if rohstoffEr == "wasser":
@@ -257,9 +276,9 @@ class Dialog(QtWidgets.QMainWindow):
             self.warnLabel.setPixmap(pixmap)
 
             self.warnLabel.setToolTip(beschreibung)
-            self.warnLabel.setStyleSheet("""QToolTip { 
-                                       background-color: black; 
-                                       color: red; 
+            self.warnLabel.setStyleSheet("""QToolTip {
+                                       background-color: black;
+                                       color: red;
                                        border: black solid 1px
                                        }""")
 
@@ -268,10 +287,11 @@ class Dialog(QtWidgets.QMainWindow):
 
         self.calcGeneral()
 
-
         fu.checkBuildings(self)
 
         fu.calcKette(self, "holz", 2, "papier", 1, 9)
+        fu.calcKette(self, "holz", 2, "kohle", 1, 11)
+        fu.calc2Kette(self, "eisen", 1, "kohle", 1, "eisenbarren", 1, 12)
 
     def calcOverview(self):
         self.stimmungsEreignis()
@@ -282,7 +302,7 @@ class Dialog(QtWidgets.QMainWindow):
 
     def calcGeneral(self):
         cursor = connectSql.cursor()
-        exucute = f'SELECT * FROM general'
+        exucute = 'SELECT * FROM general'
         cursor.execute(exucute)
         zeilen = cursor.fetchall()
         secondsGone = zeilen[0][0]
@@ -295,9 +315,9 @@ class Dialog(QtWidgets.QMainWindow):
         connectSql.commit()
 
     def stimmungsEreignis(self):
-        hit = random.randint(1, 50)
+        hit = random.randint(1, 100)
 
-        if hit == 50:
+        if hit == 100:
             cu = connectSql.cursor()
             ex = f'SELECT * FROM einwohner where userid = {self.userid}'
             cu.execute(ex)
@@ -325,54 +345,72 @@ class Dialog(QtWidgets.QMainWindow):
                 connectSql.commit()
 
     def einwohnerBeduerfnis(self):
-        hit = random.randint(1, 50)
+        hit = random.randint(1, 100)
 
-        if hit == 50:
+        if hit == 100:
             cu = connectSql.cursor()
-            ex = f'SELECT * FROM bedarfsMeldungen'
+            ex = 'SELECT * FROM general where warningopen = 0'
             cu.execute(ex)
-            zeilen = cu.fetchall()
+            zeilen = cu.fetchone()
 
-            pickMeldung = random.randint(0, len(zeilen) - 1)
-            bedarfRes = zeilen[pickMeldung][2]
-            bedarfAnz = zeilen[pickMeldung][4]
-            ex = f'SELECT * FROM bedarfDo where userid = "{self.userid}" and accept = 0'
+            if zeilen:
+                self.warningWin = warningWindow()
+                cu = connectSql.cursor()
+                ex = f'SELECT * FROM bedarfsMeldungen'
+                cu.execute(ex)
+                zeilen = cu.fetchall()
 
-            cu.execute(ex)
-            ze = cu.fetchall()
-            if not ze:
-                exu = f'SELECT * FROM einwohner where userid = {self.userid}'
-                cu.execute(exu)
-                zei = cu.fetchall()
-                pick = random.randint(0, len(zei) - 1)
-                einid = zei[pick][0]
-
-                ex = f'Insert into bedarfDo ("bid", "userid", "accept", "einid") VALUES ("{zeilen[pickMeldung][0]}", "{self.userid}", "0", "{einid}")'
+                pickMeldung = random.randint(0, len(zeilen) - 1)
+                bedarfRes = zeilen[pickMeldung][2]
+                bedarfAnz = zeilen[pickMeldung][4]
+                ex = f'SELECT * FROM bedarfDo where userid = "{self.userid}" and accept = 0'
 
                 cu.execute(ex)
-                connectSql.commit()
+                ze = cu.fetchall()
+                if not ze:
+                    exu = f'SELECT * FROM einwohner where userid = {self.userid}'
+                    cu.execute(exu)
+                    zei = cu.fetchall()
+                    pick = random.randint(0, len(zei) - 1)
+                    einid = zei[pick][0]
 
-                exu = f'SELECT * FROM einwohner where einwohnerid = {einid}'
-                cu.execute(exu)
-                zei = cu.fetchall()
-                name = zei[0][6]
-                zufriedenheit = zei[0][5]
+                    ex = f'Insert into bedarfDo ("bid", "userid", "accept", "einid") VALUES ("{zeilen[pickMeldung][0]}", "{self.userid}", "0", "{einid}")'
 
-                meldung = f'{name} ({zufriedenheit})\n{zeilen[pickMeldung][1]}\n{bedarfAnz} {bedarfRes}'
+                    cu.execute(ex)
+                    connectSql.commit()
 
-                self.warningWin.show()
-                self.warningWin.warningLabel.setText(f'{meldung}')
-                self.warningWin.ablehnenButton.clicked.connect(
-                    lambda checked, text=zeilen[pickMeldung][0]: self.bedarfCancelChoose(text))
-                self.warningWin.annehmenButton.clicked.connect(
-                    lambda checked, text=zeilen[pickMeldung][0]: self.bedarfAcceptChoose(text))
+                    exu = f'SELECT * FROM einwohner where einwohnerid = {einid}'
+                    cu.execute(exu)
+                    zei = cu.fetchall()
+                    name = zei[0][6]
+                    zufriedenheit = zei[0][5]
+
+                    meldung = f'{name} ({zufriedenheit})\n{zeilen[pickMeldung][1]}\n{bedarfAnz} {bedarfRes}'
+
+                    exucute = 'update general set warningopen = 1'
+                    cu.execute(exucute)
+                    connectSql.commit()
+
+                    self.warningWin.show()
+                    self.warningWin.warningLabel.setText(f'{meldung}')
+                    self.warningWin.ablehnenButton.clicked.connect(
+                        lambda checked, text=zeilen[pickMeldung][0]: self.bedarfCancelChoose(text))
+                    self.warningWin.annehmenButton.clicked.connect(
+                        lambda checked, text=zeilen[pickMeldung][0]: self.bedarfAcceptChoose(text))
 
     def bedarfCancelChoose(self, bid):
+
         cursor = connectSql.cursor()
         exucute = f'DELETE FROM bedarfDo WHERE bid = "{bid}" and userid = "{self.userid}"'
         cursor.execute(exucute)
         connectSql.commit()
         self.warningWin.close()
+        self.warningWin.deleteLater()
+        self.warningWin = None
+
+        exucute = 'update general set warningopen = 0'
+        cursor.execute(exucute)
+        connectSql.commit()
 
     def bedarfAcceptChoose(self, bid):
         cursor = connectSql.cursor()
@@ -382,7 +420,6 @@ class Dialog(QtWidgets.QMainWindow):
         cursor.execute(ex)
         zeilen = cursor.fetchall()
         einid = zeilen[0][0]
-
 
         ex = f'SELECT * FROM bedarfsMeldungen where bid = {bid}'
 
@@ -397,8 +434,6 @@ class Dialog(QtWidgets.QMainWindow):
         cursor.execute(ex)
         zeilen = cursor.fetchall()
         rohstoffakt = zeilen[0][0]
-
-
 
         ex = f'SELECT zufriedenheit FROM einwohner where einwohnerid = {einid} '
         cursor.execute(ex)
@@ -423,33 +458,51 @@ class Dialog(QtWidgets.QMainWindow):
         cursor.execute(exucute)
         connectSql.commit()
         self.warningWin.close()
+        self.warningWin.deleteLater()
+        self.warningWin = None
+
+        exucute = 'update general set warningopen = 0'
+        cursor.execute(exucute)
+        connectSql.commit()
 
     def einwohnerEreignis(self):
-        hit = random.randint(1, 50)
+        hit = random.randint(1, 100)
 
-        if hit == 50:
+        if hit == 51000:
             cu = connectSql.cursor()
-            ex = f'SELECT * FROM einwohnerereignis'
+            ex = 'SELECT * FROM general where warningopen = 0'
             cu.execute(ex)
-            zeilen = cu.fetchall()
+            zeilen = cu.fetchone()
 
-            pick = random.randint(0, len(zeilen) - 1)
+            if zeilen:
 
-            ex = f'SELECT * FROM einereignisChoose where userid = "{self.userid}" and accept = 0'
-            cu.execute(ex)
-            ze = cu.fetchall()
-            if not ze:
-                ex = f'Insert into einereignisChoose ("erid", "userid", accept) VALUES ("{zeilen[pick][0]}", "{self.userid}", "0")'
+                self.warningWin = warningWindow()
+
+                ex = f'SELECT * FROM einwohnerereignis'
                 cu.execute(ex)
-                connectSql.commit()
+                zeilen = cu.fetchall()
 
-                self.warningWin.show()
+                pick = random.randint(0, len(zeilen) - 1)
 
-                self.warningWin.warningLabel.setText(f'{zeilen[pick][1]}')
-                self.warningWin.ablehnenButton.clicked.connect(
-                    lambda checked, text=zeilen[pick][0]: self.cancelChoose(text))
-                self.warningWin.annehmenButton.clicked.connect(
-                    lambda checked, text=zeilen[pick][0]: self.acceptChoose(text))
+                ex = f'SELECT * FROM einereignisChoose where userid = "{self.userid}" and accept = 0'
+                cu.execute(ex)
+                ze = cu.fetchall()
+                if not ze:
+                    ex = f'Insert into einereignisChoose ("erid", "userid", accept) VALUES ("{zeilen[pick][0]}", "{self.userid}", "0")'
+                    cu.execute(ex)
+                    connectSql.commit()
+
+                    self.warningWin.show()
+
+                    exucute = 'update general set warningopen = 1'
+                    cu.execute(exucute)
+                    connectSql.commit()
+
+                    self.warningWin.warningLabel.setText(f'{zeilen[pick][1]}')
+                    self.warningWin.ablehnenButton.clicked.connect(
+                        lambda checked, text=zeilen[pick][0]: self.cancelChoose(text))
+                    self.warningWin.annehmenButton.clicked.connect(
+                        lambda checked, text=zeilen[pick][0]: self.acceptChoose(text))
 
     def acceptChoose(self, erid):
         cursor = connectSql.cursor()
@@ -457,6 +510,8 @@ class Dialog(QtWidgets.QMainWindow):
         cursor.execute(exucute)
         connectSql.commit()
         self.warningWin.close()
+        self.warningWin.deleteLater()
+        self.warningWin = None
 
         ex = f'SELECT * FROM einwohnerereignis where id = "{erid}"'
         cursor.execute(ex)
@@ -469,13 +524,17 @@ class Dialog(QtWidgets.QMainWindow):
             alter = random.randint(16, 30)
             name = names.get_full_name()
 
-
             exucute = f'INSERT INTO einwohner ("userid", "lebensalter", "name") VALUES ("{self.userid}", "{alter}", "{name}")'
             cursor.execute(exucute)
             connectSql.commit()
 
-            fu.saveNotify(self, f'Sie haben einen neuen Einwohner Name: {name} Alter: {alter}')
+            fu.saveNotify(
+                self, f'Sie haben einen neuen Einwohner Name: {name} Alter: {alter}')
             i += 1
+
+        exucute = 'update general set warningopen = 0'
+        cursor.execute(exucute)
+        connectSql.commit()
 
     def cancelChoose(self, erid):
         cursor = connectSql.cursor()
@@ -483,6 +542,12 @@ class Dialog(QtWidgets.QMainWindow):
         cursor.execute(exucute)
         connectSql.commit()
         self.warningWin.close()
+        self.warningWin.deleteLater()
+        self.warningWin = None
+
+        exucute = 'update general set warningopen = 0'
+        cursor.execute(exucute)
+        connectSql.commit()
 
     def calcEreignis(self):
         cursor = connectSql.cursor()
@@ -643,17 +708,17 @@ class Dialog(QtWidgets.QMainWindow):
         rohstoffe = fu.getRohstoffe(self)
 
         self.labelNahrung.setText(
-            f'Nahrung: {str(round(rohstoffe["nahrung"], 2))}\n Holz: {str(round(rohstoffe["holz"], 2))}\n' 
-            f'Stein: {str(round(rohstoffe["stein"], 2))}\n Wasser: {str(round(rohstoffe["wasser"], 2))}\n' 
+            f'Nahrung: {str(round(rohstoffe["nahrung"], 2))}\n Holz: {str(round(rohstoffe["holz"], 2))}\n'
+            f'Stein: {str(round(rohstoffe["stein"], 2))}\n Wasser: {str(round(rohstoffe["wasser"], 2))}\n'
+            f'Eisen: {str(round(rohstoffe["eisen"], 2))}\n Kohle: {str(round(rohstoffe["kohle"], 2))}\n'
+            f'Eisenbarren: {str(round(rohstoffe["eisenbarren"], 2))}\n'
             f'Papier: {str(round(rohstoffe["papier"], 2))}\n Freie Arbeiter : {str(freiArbeiter)}')
-
 
     def clearLayout(self, layout):
         while layout.count():
             child = layout.takeAt(0)
             if child.widget():
                 child.widget().deleteLater()
-
 
 
 if __name__ == '__main__':
